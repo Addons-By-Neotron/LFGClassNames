@@ -1,0 +1,8 @@
+## Interface: 16001
+## Title: LFG Class Names
+## Notes: Adds class icons and class names to the group finder's listing tooltip (also when LFG Forever shows it).
+## Author: NeoTron
+## Version: @project-version@
+## SavedVariables: LFGClassNamesDB
+
+LFGClassNames.lua
