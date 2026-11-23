@@ -1,7 +1,11 @@
 ## Interface: 16001
 ## Title: LFG Class Names
 ## Notes: Adds class icons and class names to the group finder's listing tooltip (also when LFG Forever shows it).
+## Category: Group Finder
+## IconTexture: Interface\AddOns\LFGClassNames\Media\icon.png
 ## Author: NeoTron
+## X-Curse-Project-ID: 1827025
+## X-Wago-ID: n6VYJQNd
 ## Version: @project-version@
 ## SavedVariables: LFGClassNamesDB
 

@@ -1,1 +1,5 @@
 package-as: LFGClassNames
+
+ignore:
+    - logo.png
+    - tools
