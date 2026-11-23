@@ -107,8 +107,85 @@ local function RegisterSettings()
 	Settings.RegisterAddOnCategory(category)
 end
 
+local Demo
+--@debug@
+-- /lfgcn demo: Blizzard's tooltip for a made-up group, for screenshots. The
+-- C_LFGList calls its builder makes are answered from the table below while it
+-- runs; the dungeon is a real activity, looked up by name.
+local DEMO_ACTIVITY = "Blackrock Depths"
+local DEMO_COMMENT = "LF1M dps, full run"
+local DEMO_MEMBERS = {
+	{ name = "Aldwyn", classFilename = "PRIEST", level = 60, assignedRole = "HEALER", isLeader = true },
+	{ name = "Brannoc", classFilename = "WARRIOR", level = 58, assignedRole = "TANK" },
+	{ name = "Celyse", classFilename = "MAGE", level = 57, assignedRole = "DAMAGER" },
+	{ name = "Elsbeth", classFilename = "WARLOCK", level = 55, assignedRole = "DAMAGER" },
+}
+
+local function DemoActivityIDs()
+	for _, id in ipairs(C_LFGList.GetAvailableActivities() or {}) do
+		local info = C_LFGList.GetActivityInfoTable(id)
+		if info and info.fullName and info.fullName:find(DEMO_ACTIVITY, 1, true) then
+			return { id }
+		end
+	end
+	return {}
+end
+
+Demo = function()
+	if not LFGBrowseSearchEntryTooltip and C_AddOns and C_AddOns.LoadAddOn then
+		C_AddOns.LoadAddOn("Blizzard_GroupFinder_VanillaStyle")
+	end
+	local tooltip = LFGBrowseSearchEntryTooltip
+	if not tooltip then
+		print("LFG Class Names: the group finder's tooltip isn't loaded.")
+		return
+	end
+	if tooltip:IsShown() then
+		tooltip:Hide()
+		return
+	end
+
+	local counts = { TANK = 0, HEALER = 0, DAMAGER = 0 }
+	for _, member in ipairs(DEMO_MEMBERS) do
+		member.lfgRoles = { tank = member.assignedRole == "TANK", healer = member.assignedRole == "HEALER",
+			dps = member.assignedRole == "DAMAGER" }
+		counts[member.assignedRole] = counts[member.assignedRole] + 1
+	end
+	local fake = {
+		GetSearchResultInfo = function()
+			return { searchResultID = 0, numMembers = #DEMO_MEMBERS, comment = DEMO_COMMENT,
+				leaderName = DEMO_MEMBERS[1].name, activityIDs = DemoActivityIDs(), isDelisted = false,
+				newPlayerFriendly = false }
+		end,
+		GetSearchResultMemberCounts = function() return counts end,
+		GetSearchResultLeaderInfo = function() return DEMO_MEMBERS[1] end,
+		GetSearchResultPlayerInfo = function(_, index) return DEMO_MEMBERS[index] end,
+		GetSearchResultEncounterInfo = function() return nil end,
+		GetActiveEntryInfo = function() return nil end,
+	}
+	local real = {}
+	for key, func in pairs(fake) do
+		real[key], C_LFGList[key] = C_LFGList[key], func
+	end
+	local ok, err = pcall(LFGBrowseSearchEntryTooltip_UpdateAndShow, tooltip, 0)
+	for key, func in pairs(real) do
+		C_LFGList[key] = func
+	end
+	if not ok then
+		print("LFG Class Names demo:", err)
+		return
+	end
+	tooltip:ClearAllPoints()
+	tooltip:SetPoint("CENTER", UIParent, "CENTER")
+end
+--@end-debug@
+
 SLASH_LFGCLASSNAMES1 = "/lfgcn"
-SlashCmdList.LFGCLASSNAMES = function()
+SlashCmdList.LFGCLASSNAMES = function(msg)
+	if Demo and strtrim(msg or "") == "demo" then
+		Demo()
+		return
+	end
 	if category then
 		Settings.OpenToCategory(category:GetID())
 	end
