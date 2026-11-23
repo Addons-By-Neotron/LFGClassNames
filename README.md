@@ -1,3 +1,5 @@
+<img src="logo.png" alt="LFG Class Names logo" width="160" align="right">
+
 # LFG Class Names
 
 **For WoW Forever.**
